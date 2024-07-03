@@ -9,9 +9,8 @@ class Collection{
          if(!this.db[name]){
             this.db[name] = []
         }
+         this.index = {}
     }
-    
-
     save() {
         const saved = JSON.stringify(this.db[this.name], null, 2);
         fs.writeFileSync(`./${this.name}.json`, saved, err => {
@@ -21,11 +20,6 @@ class Collection{
                 console.log("OK");
             }
         });
-    }
-
-
-    sort(input = {}){
-        
     }
     
     read() {
@@ -42,7 +36,7 @@ class Collection{
         const newData = {_id, ...data}
         this.db[this.name].push(newData)
         this.save()
-        console.log({
+        return({
             acknowledged: true,
             insertedId: _id
         })
@@ -71,6 +65,13 @@ class Collection{
     // //find Many
 
    find(query = {}){
+    this.readIndex()
+    if(this.index[Object.keys(query)]){
+        let id = this.index[Object.keys(query)][query[Object.keys(query)]]
+        this.db[this.name].filter(doc => {
+            return id.every(ids => doc[id] === id)
+        })
+    }
     this.read();
         if(!this.db[this.name]){
             return null
@@ -156,6 +157,53 @@ class Collection{
             }
         }
     }
+
+    findIndex(query = {}){
+        this.read();
+            if(!this.db[this.name]){
+                return null
+            }
+           return this.db[this.name].filter(doc => {
+            return Object.keys(query).every(key => doc[key] === query[key])
+           })
+        }
+
+        readIndex() {
+            if (fs.existsSync(`./${this.name}Index.json`)) {
+                const output = fs.readFileSync(`./${this.name}Index.json`, 'utf-8');
+                this.index = JSON.parse(output);
+            }
+        }
+        createIndex(query = {}) {
+            this.read();
+            const data = this.findIndex(query);
+            const arr = data.map(doc => doc._id);
+            const keys = Object.keys(query);
+            const labl = query[keys];
+            this.readIndex()
+            if (!this.index[keys]) {
+                this.index[keys] = {};
+            }
+            if (!this.index[keys][labl]) {
+                this.index[keys][labl] = [];
+            }
+            
+            this.index[keys][labl] = arr           
+            this.saveIndex();
+        }
+    saveIndex() {
+        const saved = JSON.stringify(this.index, null, 2);
+        fs.writeFileSync(`./${this.name}Index.json`, saved, err => {
+            if (err) {
+                console.log(err);
+            } else {
+                console.log("OK");
+            }
+        });
+    }
+
+
+
 }
 class DB{
     constructor(){
@@ -165,4 +213,10 @@ class DB{
         return new Collection(name,this)
     }
 }
+
+let db = new DB()  
+console.log(db.collection("Admin").find({age : 30}))
+
+
 module.exports = DB
+
