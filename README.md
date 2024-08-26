@@ -40,57 +40,54 @@ File-Based Database System in Node.js
 - 
 - saveIndex(): Saves the current index to a JSON file.
 2. DB Class
-  
-The DB class is a container for multiple collections. It provides a method to create or retrieve
-collections.
-Key Methods
-Here are the main methods provided by the DB class:
+- The DB class is a container for multiple collections. It provides a method to create or retrieve
+- collections.
+- Key Methods
+- Here are the main methods provided by the DB class:
 - constructor(): Initializes the database with an empty set of collections.
 - collection(name): Retrieves or creates a new collection by name.
-Usage
-
-
-1. Initializing the Database :
-       const DB = require('./DB');
-       const db = new DB();
+- Usage
+- 1. Initializing the Database :
+       - const DB = require('./DB');
+       - const db = new DB();
    
-3. Creating a Collection :
-   const users = db.collection('users');
-5. Inserting Data:
+- 3. Creating a Collection :
+   - const users = db.collection('users');
+- 5. Inserting Data:
 
-File-Based Database System in Node.js : 
+- File-Based Database System in Node.js : 
        - Insert One Document:
-         users.insertOne({ name: 'Alice', age: 30 });
+       - users.insertOne({ name: 'Alice', age: 30 });
          -----------------------------------------------
        - Insert Multiple Documents:
-users.insertMany([{ name: 'Bob', age: 25 }, { name: 'Charlie', age: 35 }]);
+- users.insertMany([{ name: 'Bob', age: 25 }, { name: 'Charlie', age: 35 }]);
 ---------------------------------------------------------
-4. Querying Data : 
+- 4. Querying Data : 
        - Find All Matching Documents:
-         const results = users.find({ age: 30 });
+       - const results = users.find({ age: 30 });
        - Find One Document:
-         const result = users.findOne({ name: 'Alice' });
+       -  const result = users.findOne({ name: 'Alice' });
    ------------------------------------------------------
-6. Updating Data:
+- 6. Updating Data:
        - Update One Document:
-         users.updateOne({ name: 'Alice' }, { $set: { age: 31 } });
+       - users.updateOne({ name: 'Alice' }, { $set: { age: 31 } });
        - Update Multiple Documents:
-         users.updateMany({ age: 30 }, { $set: { age: 31 } });
+       - users.updateMany({ age: 30 }, { $set: { age: 31 } });
    -------------------------------------------------------
-8. Deleting Data : 
+- 7. Deleting Data : 
        - Delete One Document:
-         users.deleteOne({ name: 'Alice' });
+       - users.deleteOne({ name: 'Alice' });
        - Delete Multiple Documents:
-         users.deleteMany({ age: 31 });
+       - users.deleteMany({ age: 31 });
    ------------------------------------------------------
-7. Indexing
+8. Indexing
        - Create an Index:
-         users.createIndex({ age: 25 });
-File Structure
+       - users.createIndex({ age: 25 });
+- File Structure
 - DB.js: The main file containing the DB and Collection classes.
 - <collection_name>.json: Files generated for each collection, storing the actual data.
 - <collection_name>Index.json: Files storing index data for faster querying.
-Conclusion
-This file-based database system is ideal for small projects or situations where a simple, lightweight
-database solution is needed. It offers flexibility and ease of use while providing essential database
-functionalities like CRUD operations and indexing.
+- Conclusion
+- This file-based database system is ideal for small projects or situations where a simple, lightweight
+- database solution is needed. It offers flexibility and ease of use while providing essential database
+- functionalities like CRUD operations and indexing.
