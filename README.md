@@ -48,36 +48,41 @@ Here are the main methods provided by the DB class:
 - constructor(): Initializes the database with an empty set of collections.
 - collection(name): Retrieves or creates a new collection by name.
 Usage
-1. Initializing the Database
+
+
+1. Initializing the Database :
        const DB = require('./DB');
        const db = new DB();
-2. Creating a Collection
-       const users = db.collection('users');
-3. Inserting Data
+   
+3. Creating a Collection :
+   const users = db.collection('users');
+5. Inserting Data:
 
-File-Based Database System in Node.js
+File-Based Database System in Node.js : 
        - Insert One Document:
          users.insertOne({ name: 'Alice', age: 30 });
+         -----------------------------------------------
        - Insert Multiple Documents:
-users.insertMany([{ name: 'Bob', age: 25 }, { name: 'Charlie',
-age: 35 }]);
-4. Querying Data
+users.insertMany([{ name: 'Bob', age: 25 }, { name: 'Charlie', age: 35 }]);
+---------------------------------------------------------
+4. Querying Data : 
        - Find All Matching Documents:
          const results = users.find({ age: 30 });
        - Find One Document:
          const result = users.findOne({ name: 'Alice' });
-5. Updating Data
+   ------------------------------------------------------
+6. Updating Data:
        - Update One Document:
          users.updateOne({ name: 'Alice' }, { $set: { age: 31 } });
        - Update Multiple Documents:
          users.updateMany({ age: 30 }, { $set: { age: 31 } });
-6. Deleting Data
-
-File-Based Database System in Node.js
+   -------------------------------------------------------
+8. Deleting Data : 
        - Delete One Document:
          users.deleteOne({ name: 'Alice' });
        - Delete Multiple Documents:
          users.deleteMany({ age: 31 });
+   ------------------------------------------------------
 7. Indexing
        - Create an Index:
          users.createIndex({ age: 25 });
