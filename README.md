@@ -47,15 +47,15 @@ File-Based Database System in Node.js
 - constructor(): Initializes the database with an empty set of collections.
 - collection(name): Retrieves or creates a new collection by name.
 - Usage
+-----------------------------------------------------------------
 - 1. Initializing the Database :
        - const DB = require('./DB');
        - const db = new DB();
-   
-- 3. Creating a Collection :
+-------------------------------------------------------------------  
+- 2. Creating a Collection :
    - const users = db.collection('users');
-- 5. Inserting Data:
-
-- File-Based Database System in Node.js : 
+-------------------------------------------------------------------
+- 3. Inserting Data:
        - Insert One Document:
        - users.insertOne({ name: 'Alice', age: 30 });
          -----------------------------------------------
@@ -68,19 +68,19 @@ File-Based Database System in Node.js
        - Find One Document:
        -  const result = users.findOne({ name: 'Alice' });
    ------------------------------------------------------
-- 6. Updating Data:
+- 5. Updating Data:
        - Update One Document:
        - users.updateOne({ name: 'Alice' }, { $set: { age: 31 } });
        - Update Multiple Documents:
        - users.updateMany({ age: 30 }, { $set: { age: 31 } });
    -------------------------------------------------------
-- 7. Deleting Data : 
+- 6. Deleting Data : 
        - Delete One Document:
        - users.deleteOne({ name: 'Alice' });
        - Delete Multiple Documents:
        - users.deleteMany({ age: 31 });
    ------------------------------------------------------
-- 8. Indexing
+- 7. Indexing
        - Create an Index:
        - users.createIndex({ age: 25 });
    ------------------------------------------------------
