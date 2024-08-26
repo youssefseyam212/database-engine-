@@ -13,20 +13,34 @@ Here are the main methods provided by the Collection class:
 - constructor(name, db): Initializes a new collection with the specified name and references the
 parent database object.
 - save(): Saves the current state of the collection to a JSON file named after the collection.
+- 
 - read(): Reads the collection data from its corresponding JSON file.
+- 
 - insertOne(data): Inserts a single document into the collection, assigning it a unique _id.
+- 
 - insertMany(data): Inserts multiple documents into the collection, each with a unique _id.
+- 
 - find(query): Finds all documents matching a given query.
+- 
 - findOne(query): Finds the first document matching a given query.
+- 
 - deleteOne(query): Deletes the first document matching a given query.
+- 
 - deleteMany(query): Deletes all documents matching a given query.
+- 
 - updateOne(query, update): Updates the first document that matches a given query.
+- 
 File-Based Database System in Node.js
+
 - updateMany(query, update): Updates all documents that match a given query.
+- 
 - createIndex(query): Creates an index based on the specified query.
+- 
 - readIndex(): Reads the index data from a JSON file.
+- 
 - saveIndex(): Saves the current index to a JSON file.
 2. DB Class
+  
 The DB class is a container for multiple collections. It provides a method to create or retrieve
 collections.
 Key Methods
