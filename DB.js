@@ -1,122 +1,112 @@
+// DB.js
 
-const{ObjectId} = require("bson")
-const fs = require('fs')
-
-class Collection{
-    constructor(name , db){
+const { ObjectId } = require("bson");
+const fs = require('fs');
+class Collection {
+    constructor(name, db) {
         this.name = name;
-         this.db = db
-         if(!this.db[name]){
-            this.db[name] = []
+        this.db = db;
+        if (!this.db[name]) {
+            this.db[name] = [];
         }
-         this.index = {}
+        this.index = {};
     }
     save() {
         const saved = JSON.stringify(this.db[this.name], null, 2);
-        fs.writeFileSync(`./${this.name}.json`, saved, err => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log("OK");
-            }
-        });
+        fs.writeFileSync(`./${this.name}.json`, saved);
     }
-    
     read() {
         if (fs.existsSync(`./${this.name}.json`)) {
             const output = fs.readFileSync(`./${this.name}.json`, 'utf-8');
             this.db[this.name] = JSON.parse(output);
         }
     }
-    
-
-    insertOne(data){
-        this.read()
-        const _id = new ObjectId()
-        const newData = {_id, ...data}
-        this.db[this.name].push(newData)
-        this.save()
-        return({
+    insertOne(data) {
+        this.read();
+        const _id = new ObjectId();
+        const newData = { _id, ...data };
+        this.db[this.name].push(newData);
+        this.save();
+        return {
             acknowledged: true,
             insertedId: _id
-        })
+        };
     }
-
-    insertMany(data){
-        this.read()
-        if(!Array.isArray(data)){
-            throw new Error("the input must me an array");
+    insertMany(data) {
+        this.read();
+        if (!Array.isArray(data)) {
+            throw new Error("Input must be an array");
         }
         let insertedIds = {};
-        data.forEach((item,index)=>{
-            const _id = new ObjectId()
-            const newData = {_id, ...item}
-            this.db[this.name].push(newData)
-            insertedIds[index] = _id
-        })
-        this.save()
-        console.log({
+        data.forEach((item, index) => {
+            const _id = new ObjectId();
+            const newData = { _id, ...item };
+            this.db[this.name].push(newData);
+            insertedIds[index] = _id;
+        });
+        this.save();
+        return {
             acknowledged: true,
             insertedIds 
-        })
+        };
     }
-
-
-    // //find Many
-
-   find(query = {}){
-    this.readIndex()
-    if(this.index[Object.keys(query)]){
-        let id = this.index[Object.keys(query)][query[Object.keys(query)]]
-        this.db[this.name].filter(doc => {
-            return id.every(ids => doc[id] === id)
-        })
-    }
-    this.read();
-        if(!this.db[this.name]){
-            return null
-        }
-       return this.db[this.name].filter(doc => {
-        return Object.keys(query).every(key => doc[key] === query[key])
-       })
-    }
-
-    //findOne 
-    findOne(query = {}){
+    find(query = {}) {
         this.read();
-        if(!this.db[this.name]){return null}
-       return this.db[this.name].find(item=> {
-        return Object.keys(query).every(key => item[key] == query[key])
-       })
+        if (!this.db[this.name]) {
+            return null;
+        }
+        this.readIndex();
+        const qk = Object.keys(query); // qk -> query key
+        if(this.index[qk[0]]){
+            const label = query[qk[0]]
+            if(this.index[qk[0]][label]){
+                const ids = this.index[qk[0]][label]
+                return this.db[this.name].filter(doc=>ids.includes(doc._id.toString()))
+            }
+        }
+        else{
+            return this.db[this.name].filter(doc => {
+                return Object.keys(query).every(key => doc[key] === query[key]);
+            });
+        }
+        
+    }
+    findOne(query = {}) {
+        this.read();
+        if (!this.db[this.name]) {
+            return null;
+        }
+        return this.db[this.name].find(item => {
+            return Object.keys(query).every(key => item[key] == query[key]);
+        });
     }
 
     removeByAttrMany(query = {}) {
-        return this.db[this.name].filter(doc =>{
-            return Object.keys(query).every(key => doc[key] !== query[key])
-    })
-   }
-
-    deleteMany(query = {}){
-        this.read()
-        let beforeDeletion = this.db[this.name].length
-        this.db[this.name] = this.removeByAttrMany(query)
-        let afterDeletion = this.db[this.name].length 
-        this.save()
-        console.log({
-            acknowledged: true,
-            deletedCount: beforeDeletion - afterDeletion
-        })
+        return this.db[this.name].filter(doc => {
+            return Object.keys(query).every(key => doc[key] !== query[key]);
+        });
     }
 
+    deleteMany(query = {}) {
+        this.read();
+        let beforeDeletion = this.db[this.name].length;
+        this.db[this.name] = this.removeByAttrMany(query);
+        let afterDeletion = this.db[this.name].length;
+        this.save();
+        return {
+            acknowledged: true,
+            deletedCount: beforeDeletion - afterDeletion
+        };
+    }
 
-    deleteOne(query = {}){
-        this.read()
-        const col = this.db[this.name]
-        for(let i = 0 ; i < col.length ; i++){
-            let doc = col[i]
-            if(Object.keys(query).every(key => doc[key] == query[key])){
-                col.splice(i,1)
-                this.save()
+    deleteOne(query = {}) {
+        this.read();
+        const col = this.db[this.name];
+        for (let i = 0; i < col.length; i++) {
+            let doc = col[i];
+            if (Object.keys(query).every(key => doc[key] == query[key])) {
+                col.splice(i, 1);
+                this.save();
                 return {
                     acknowledged: true,
                     deletedCount: 1
@@ -129,94 +119,86 @@ class Collection{
         };
     }
 
-    updateMany(query = {} , update = {}){
-       this.read()
-        this.db[this.name].forEach((obj) => {
-            const matches = Object.keys(query).every(key => obj[key] === query[key]) 
-            if(matches){
-                Object.keys(update.$set).forEach(updateKey => {
-                    obj[updateKey] = update.$set[updateKey]
-                })
-            }
-        })
-        this.save()
-    }
-    updateOne(query = {} , update = {}){
-        this.read()
-        const col = this.db[this.name]
-        for(let  i = 0 ; i < col.length ; i++){
-            let doc = col[i]
-            const matche = Object.keys(query).every(key => doc[key] === query[key]) 
-            if(matche){
-                for(let key in update.$set)
-                {
-                   col[i][key] = update.$set[key]
-                }
-                this.save()
-                return true
-            }
-        }
-    }
-
-    findIndex(query = {}){
+    updateMany(query = {}, update = {}) {
         this.read();
-            if(!this.db[this.name]){
-                return null
+        this.db[this.name].forEach((obj) => {
+            const matches = Object.keys(query).every(key => obj[key] === query[key]);
+            if (matches) {
+                Object.keys(update.$set).forEach(updateKey => {
+                    obj[updateKey] = update.$set[updateKey];
+                });
             }
-           return this.db[this.name].filter(doc => {
-            return Object.keys(query).every(key => doc[key] === query[key])
-           })
-        }
+        });
+        this.save();
+    }
 
-        readIndex() {
-            if (fs.existsSync(`./${this.name}Index.json`)) {
-                const output = fs.readFileSync(`./${this.name}Index.json`, 'utf-8');
-                this.index = JSON.parse(output);
+    updateOne(query = {}, update = {}) {
+        this.read();
+        const col = this.db[this.name];
+        for (let i = 0; i < col.length; i++) {
+            let doc = col[i];
+            const matche = Object.keys(query).every(key => doc[key] === query[key]);
+            if (matche) {
+                for (let key in update.$set) {
+                    col[i][key] = update.$set[key];
+                }
+                this.save();
+                return true;
             }
         }
-        createIndex(query = {}) {
-            this.read();
-            const data = this.findIndex(query);
-            const arr = data.map(doc => doc._id);
-            const keys = Object.keys(query);
-            const labl = query[keys];
-            this.readIndex()
-            if (!this.index[keys]) {
-                this.index[keys] = {};
-            }
-            if (!this.index[keys][labl]) {
-                this.index[keys][labl] = [];
-            }
-            
-            this.index[keys][labl] = arr           
-            this.saveIndex();
+        return false
+    }
+
+    findIndex(query = {}) {
+        this.read();
+        if (!this.db[this.name]) {
+            return null;
         }
-    saveIndex() {
-        const saved = JSON.stringify(this.index, null, 2);
-        fs.writeFileSync(`./${this.name}Index.json`, saved, err => {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log("OK");
-            }
+        return this.db[this.name].filter(doc => {
+            return Object.keys(query).every(key => doc[key] === query[key]);
         });
     }
 
-
-
-}
-class DB{
-    constructor(){
-        this.collections = {}
+    readIndex() {
+        if (fs.existsSync(`./${this.name}Index.json`)) {
+            const output = fs.readFileSync(`./${this.name}Index.json`, 'utf-8');
+            this.index = JSON.parse(output);
+        }
     }
-    collection(name){
-        return new Collection(name,this)
+
+    createIndex(query = {}) {
+        this.read();
+        const data = this.findIndex(query);
+        const arr = data.map(doc => doc._id);
+        const keys = Object.keys(query);
+        const label = query[keys];
+        this.readIndex();
+        if (!this.index[keys]) {
+            this.index[keys] = {};
+        }
+        if (!this.index[keys][label]) {
+            this.index[keys][label] = [];
+        }
+
+        this.index[keys][label] = arr;
+        this.saveIndex();
+    }
+
+    saveIndex() {
+        const saved = JSON.stringify(this.index, null, 2);
+        fs.writeFileSync(`./${this.name}Index.json`, saved);
     }
 }
 
-let db = new DB()  
-console.log(db.collection("Admin").find({age : 30}))
+class DB {
+    constructor() {
+        this.collections = {};
+    }
 
-
-module.exports = DB
+    collection(name) {
+        return new Collection(name, this);
+    }
+}
+db = new DB();
+module.exports = DB;
 
