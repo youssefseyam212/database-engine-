@@ -80,9 +80,10 @@ File-Based Database System in Node.js
        - Delete Multiple Documents:
        - users.deleteMany({ age: 31 });
    ------------------------------------------------------
-8. Indexing
+- 8. Indexing
        - Create an Index:
        - users.createIndex({ age: 25 });
+   ------------------------------------------------------
 - File Structure
 - DB.js: The main file containing the DB and Collection classes.
 - <collection_name>.json: Files generated for each collection, storing the actual data.
