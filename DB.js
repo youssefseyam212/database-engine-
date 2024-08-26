@@ -1,7 +1,8 @@
 // DB.js
-
 const { ObjectId } = require("bson");
+const bson = require("bson")
 const fs = require('fs');
+const { deserialize } = require("v8");
 class Collection {
     constructor(name, db) {
         this.name = name;
@@ -12,15 +13,18 @@ class Collection {
         this.index = {};
     }
     save() {
-        const saved = JSON.stringify(this.db[this.name], null, 2);
-        fs.writeFileSync(`./${this.name}.json`, saved);
+        const dataToSave = { data: this.db[this.name] };
+       const savedBson = bson.serialize(dataToSave);
+        fs.writeFileSync(`./${this.name}.bson`, savedBson);
     }
     read() {
-        if (fs.existsSync(`./${this.name}.json`)) {
-            const output = fs.readFileSync(`./${this.name}.json`, 'utf-8');
-            this.db[this.name] = JSON.parse(output);
+        if (fs.existsSync(`./${this.name}.bson`)) {
+            const output = fs.readFileSync(`./${this.name}.bson`);
+            const deserializedData = bson.deserialize(output);
+            this.db[this.name] = deserializedData.data;
         }
     }
+    
     insertOne(data) {
         this.read();
         const _id = new ObjectId();
@@ -137,7 +141,15 @@ class Collection {
         const col = this.db[this.name];
         for (let i = 0; i < col.length; i++) {
             let doc = col[i];
-            const matche = Object.keys(query).every(key => doc[key] === query[key]);
+
+            const matche = Object.keys(query).every(key =>
+                {
+                    if(key === '_id'){
+                        return doc[key].toString() === query[key].toString();
+                    }
+                    return doc[key] === query[key];
+                }
+            )
             if (matche) {
                 for (let key in update.$set) {
                     col[i][key] = update.$set[key];
@@ -160,9 +172,10 @@ class Collection {
     }
 
     readIndex() {
-        if (fs.existsSync(`./${this.name}Index.json`)) {
-            const output = fs.readFileSync(`./${this.name}Index.json`, 'utf-8');
-            this.index = JSON.parse(output);
+        if (fs.existsSync(`./${this.name}.bson`)) {
+            const output = fs.readFileSync(`./${this.name}.bson`);
+            const deserializedData = bson.deserialize(output);
+            this.index = deserializedData.data;
         }
     }
 
@@ -185,8 +198,9 @@ class Collection {
     }
 
     saveIndex() {
-        const saved = JSON.stringify(this.index, null, 2);
-        fs.writeFileSync(`./${this.name}Index.json`, saved);
+        const dataSerialize = {data:this.index}
+        const savedBson = bson.serialize(dataSerialize);
+        fs.writeFileSync(`./${this.name}Index.bson`, savedBson);
     }
 }
 
@@ -200,5 +214,5 @@ class DB {
     }
 }
 db = new DB();
-module.exports = DB;
 
+module.exports = DB;
