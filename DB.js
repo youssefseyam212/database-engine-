@@ -213,6 +213,8 @@ class DB {
         return new Collection(name, this);
     }
 }
-db = new DB();
+
+
+
 
 module.exports = DB;
